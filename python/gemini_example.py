@@ -10,8 +10,61 @@ Documentación: https://ai.google.dev/gemini-api/docs
 Obtén tu clave en: https://aistudio.google.com/app/apikey
 """
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from utils import get_api_key
+
+
+DEFAULT_FLASH_CANDIDATES = [
+    "models/gemini-2.5-flash",
+    "models/gemini-2.0-flash",
+    "models/gemini-1.5-flash",
+]
+
+
+def _get_client() -> genai.Client:
+    """Crea un cliente Gemini con la clave del entorno."""
+    return genai.Client(api_key=get_api_key("GEMINI_API_KEY"))
+
+
+def _history_item_to_content(item: dict) -> types.Content:
+    """Convierte mensajes del historial al formato de google.genai."""
+    role = item.get("role", "user")
+    raw_parts = item.get("parts", [])
+
+    parts: list[types.Part] = []
+    for part in raw_parts:
+        if isinstance(part, str):
+            parts.append(types.Part.from_text(text=part))
+        elif isinstance(part, dict) and "text" in part:
+            parts.append(types.Part.from_text(text=str(part["text"])))
+
+    if not parts:
+        parts.append(types.Part.from_text(text=""))
+
+    return types.Content(role=role, parts=parts)
+
+
+def _pick_available_model(client: genai.Client, preferred: str) -> str:
+    """Devuelve un modelo válido para generate_content en la cuenta actual."""
+    available = []
+    for item in client.models.list():
+        name = getattr(item, "name", "")
+        if "generateContent" in getattr(item, "supported_actions", []):
+            available.append(name)
+
+    preferred_full = preferred if preferred.startswith("models/") else f"models/{preferred}"
+    if preferred_full in available:
+        return preferred_full
+
+    for candidate in DEFAULT_FLASH_CANDIDATES:
+        if candidate in available:
+            return candidate
+
+    if available:
+        return available[0]
+
+    raise RuntimeError("No hay modelos de Gemini disponibles para generate_content.")
 
 
 def chat_with_gemini(prompt: str, model: str = "gemini-1.5-flash") -> str:
@@ -25,12 +78,14 @@ def chat_with_gemini(prompt: str, model: str = "gemini-1.5-flash") -> str:
     Returns:
         La respuesta del modelo como texto
     """
-    genai.configure(api_key=get_api_key("GEMINI_API_KEY"))
+    client = _get_client()
+    selected_model = _pick_available_model(client, model)
+    response = client.models.generate_content(
+        model=selected_model,
+        contents=prompt,
+    )
 
-    gemini_model = genai.GenerativeModel(model)
-    response = gemini_model.generate_content(prompt)
-
-    return response.text
+    return response.text or ""
 
 
 def chat_with_history(history: list[dict], model: str = "gemini-1.5-flash") -> str:
@@ -44,15 +99,18 @@ def chat_with_history(history: list[dict], model: str = "gemini-1.5-flash") -> s
     Returns:
         La respuesta del modelo como texto
     """
-    genai.configure(api_key=get_api_key("GEMINI_API_KEY"))
+    if not history:
+        return ""
 
-    gemini_model = genai.GenerativeModel(model)
-    chat = gemini_model.start_chat(history=history[:-1])
+    client = _get_client()
+    selected_model = _pick_available_model(client, model)
+    contents = [_history_item_to_content(item) for item in history]
+    response = client.models.generate_content(
+        model=selected_model,
+        contents=contents,
+    )
 
-    last_message = history[-1]["parts"][0]
-    response = chat.send_message(last_message)
-
-    return response.text
+    return response.text or ""
 
 
 if __name__ == "__main__":

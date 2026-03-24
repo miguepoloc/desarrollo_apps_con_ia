@@ -7,7 +7,7 @@ Proyecto educativo para aprender a crear aplicaciones de **backend** y **fronten
 | Proveedor | Librería | Modelos destacados |
 |-----------|----------|-------------------|
 | **OpenAI / ChatGPT** | `openai` | GPT-4o, GPT-4-turbo, GPT-3.5-turbo |
-| **Google Gemini** | `google-generativeai` | Gemini 1.5 Pro, Gemini 1.5 Flash |
+| **Google Gemini** | `google-genai` | Gemini 1.5 Pro, Gemini 1.5 Flash |
 | **Anthropic Claude** | `anthropic` | Claude 3.5 Sonnet, Claude 3 Opus |
 | **DeepSeek** | `openai` (compatible) | DeepSeek-V3, DeepSeek-R1 |
 | **GitHub Copilot** | `openai` (Azure) | GPT-4o via Azure OpenAI |
@@ -15,7 +15,7 @@ Proyecto educativo para aprender a crear aplicaciones de **backend** y **fronten
 ## 📁 Estructura del proyecto
 
 ```
-desarrollo-apps-con-ia/
+desarrollo_apps_con_ia/
 │
 ├── notebooks/                  # Jupyter Notebooks interactivos
 │   ├── 01_openai_chatgpt.ipynb        # Ejemplos con OpenAI / ChatGPT
@@ -42,8 +42,8 @@ desarrollo-apps-con-ia/
 ### 1. Clonar el repositorio
 
 ```bash
-git clone https://github.com/miguepoloc/desarrollo-apps-con-ia.git
-cd desarrollo-apps-con-ia
+git clone https://github.com/miguepoloc/desarrollo_apps_con_ia.git
+cd desarrollo_apps_con_ia
 ```
 
 ### 2. Crear entorno virtual
