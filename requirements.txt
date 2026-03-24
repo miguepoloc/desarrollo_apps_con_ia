@@ -1,0 +1,13 @@
+# Dependencias principales para IA
+openai>=1.30.0
+google-generativeai>=0.7.0
+anthropic>=0.28.0
+
+# Jupyter Notebooks
+jupyter>=1.0.0
+notebook>=7.0.0
+ipykernel>=6.29.0
+
+# Utilidades
+python-dotenv>=1.0.0
+requests>=2.31.0
